@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+  front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./front:/front
+    working_dir: /front
+    command: node
+    # これがないとすぐ落ちる
+    tty: true
