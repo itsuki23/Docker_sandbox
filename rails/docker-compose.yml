@@ -1,12 +1,24 @@
-version: '3'
+version: "3"
 services:
-  # コンテナの名前
-  app:
-    # Dockerfileのパス
-    build: .
+  # db, appがそれぞれ一つのコンテナ・一つのプロセス
+
+  db:
+    image: mysql:8.0
+    # 8.0で認証プラグインが変わったので、mysql_native_passwordに戻す設定
+    command: --default-authentication-plugin=mysql_native_password
     volumes:
-      # ローカル:コンテナ
-      - '.:/app'
+      # コンテナ削除後もデータが残るようにMac側のディレクトリをマウント
+      - "./mysql-data:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+
+  app:                 # コンテナの名前
+    build: .           # Dockerfileのパス
+    volumes:
+      - ".:/app"       # ローカル:コンテナ
     ports:
-      - '3000:3000'  
+      - "3000:3000"  
     tty: true
+    depends_on:        # app > db に入れる
+      - db

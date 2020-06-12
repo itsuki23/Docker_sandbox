@@ -27,12 +27,12 @@ services:
     tty: true        # これがないとすぐ落ちる
 ```
 
-- ターミナル１
+- 実行
 ```
+<ターミナル１>
 $ docker-compose up
-```
-- ターミナル２
-```
+
+<ターミナル２>
 $ docker exec -it rails_app_1 /bin/bash
 $ gem install -v 5.2.1 rails
 $ cd app
@@ -47,7 +47,6 @@ http://localhost:3000
 
 
 ## 2 コマンド作業をDockerfileに書いてく
-### 編集
 - Dockerfile
 ```YAML:Dockerfile
 <追記>
@@ -56,13 +55,86 @@ RUN apt-get update && \
     apt-get install -y nodejs
 ```
 
-```ターミナル1
-$ docker-compose up --build
 ```
-```ターミナル2
+<ターミナル１>
+$ docker-compose up --build
+
+<ターミナル２>
 $ docker exec -it rails_app_1 /bin/bash
 $ cd app/src
 $ rails s -b 0.0.0.0
 ```
 http://localhost:3000
 
+
+## 3.1 Mysql追記
+- docker-compose.yml
+```YAML:dockr-compose.yml
+...
+...
+  db:
+    image: mysql:8.0
+    # 8.0で認証プラグインが変わったので、mysql_native_passwordに戻す設定
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      # コンテナ削除後もデータが残るようにMac側のディレクトリをマウント
+      - "./mysql-data:/vara/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+  app:
+    ....
+    depends_on:
+      - db
+```
+
+```
+<ターミナル1>
+$ docker-compose up --build
+
+<ターミナル2>
+$ docker exec -it rails_app_1 /bin/bash
+
+$ apt-get install -y mysql-client   # mysql入ってなかった...
+$ mysql -u root -proot -h db        # 接続確認
+```
+
+# 3.2 Rails側のMysql設定
+
+```YAML
+<./src/Gemfile>
+gem  'mysql2'
+
+<./src/config/database.yml>
+default: &default
+  adapter: mysql2
+  enconding: utf8
+  username: root
+  password: root
+  host: db
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout: 5000
+
+development:
+  <<: *default
+  database: rails_development
+```
+```
+$ cd app/src
+$ rake db:create
+$ mysql -u root -proot -h db
+mysql > show databases; => rails_developmentを確認
+```
+
+# その他
+コンテナに入るためのコマンドについて
+```
+どこからでも入れる
+$ docker exec -it rails_app_1 /bin/bash
+
+docker-compose.ymlがある場所から入れる
+$ docker-compose exec app /bin/bash
+
+rails_app_1: docker-compose upで命名されたコンテナ名
+app        : docker-compose.ymlで付けたコンテナ名
+             -> いくつもコンテナがたったらどうするんだろう…
+```
