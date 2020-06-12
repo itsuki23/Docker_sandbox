@@ -125,6 +125,112 @@ $ mysql -u root -proot -h db
 mysql > show databases; => rails_developmentを確認
 ```
 
+# リファクタリング後
+- ディレクトリ構成
+```
+<ローカル>
+.
+├── Dockerfile
+│
+├── docker-compose.yml
+│
+├── mysql-data
+│   ├── ...
+│   ...
+│
+└── src
+    ├── Gemfile
+    ├── Gemfile.lock
+    ├── README.md
+    ├── Rakefile
+    ├── app
+    ├── bin
+    ├── config
+    ├── config.ru
+    ├── db
+    ├── lib
+    ├── log
+    ├── package.json
+    ├── public
+    ├── storage
+    ├── test
+    ├── tmp
+    └── vendor
+
+
+<コンテナ>
+/
+├── app
+│   ├── Dockerfile
+│   │
+│   ├── docker-compose.yml
+│   │
+│   ├── mysql-data
+│   │   ├── ...
+│   │   ...
+│   │
+│   └── src
+│       ├── Gemfile
+│       ├── Gemfile.lock
+│       ├── README.md
+│       ├── Rakefile
+│       ├── app
+│       ├── bin
+│       ├── config
+│       ├── config.ru
+│       ├── db
+│       ├── lib
+│       ├── log
+│       ├── package.json
+│       ├── public
+│       ├── storage
+│       ├── test
+│       ├── tmp
+│       └── vendor
+│
+├── bin
+│   ├── bash
+│   ...
+│
+var, dev, src....
+...
+```
+- Dockerfile
+```YAML:Dockerfile
+FROM ruby:2.5.3-stretch
+
+RUN gem install -v 5.2.1 rails
+RUN apt-get update && \
+    apt-get install -y nodejs mysql-client
+
+COPY ./src/Gemfile /app/src/Gemfile
+COPY ./src/Gemfile.lock /app/src/Gemfile.lock
+RUN cd /app/src && bundle install
+```
+
+- docker-compose.yml
+```YAML:docker-compose.yml
+version: "3"
+services:
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - "./mysql-data:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+  app:
+    build: .
+    volumes:
+      - "./src:/app/src"
+    ports:
+      - "3000:3000"
+    tty: true
+    depends_on:
+      - db
+    working_dir: "/app"
+```
+
 # その他
 コンテナに入るためのコマンドについて
 ```
@@ -136,5 +242,4 @@ $ docker-compose exec app /bin/bash
 
 rails_app_1: docker-compose upで命名されたコンテナ名
 app        : docker-compose.ymlで付けたコンテナ名
-             -> いくつもコンテナがたったらどうするんだろう…
 ```

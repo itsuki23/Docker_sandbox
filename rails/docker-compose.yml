@@ -13,12 +13,15 @@ services:
       MYSQL_ROOT_PASSWORD: root
 
 
-  app:                 # コンテナの名前
-    build: .           # Dockerfileのパス
+  app:                       # コンテナの名前
+    build: .
+      # context: .             # Dockerfileのパス
+      # dockerfile: Dockerfile # イメージ設計図の名前(defaultはDockerfile)
     volumes:
-      - ".:/app"       # ローカル:コンテナ
+      - "./src:/app/src"             # ローカル:コンテナ
     ports:
       - "3000:3000"  
     tty: true
-    depends_on:        # app > db に入れる
+    depends_on:              # app > db に入れる
       - db
+    working_dir: "/app"      # コンテナに入ったときのdefaultのパスを指定
