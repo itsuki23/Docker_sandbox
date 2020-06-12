@@ -34,10 +34,35 @@ $ docker-compose up
 - ターミナル２
 ```
 $ docker exec -it rails_app_1 /bin/bash
-$ cd app
 $ gem install -v 5.2.1 rails
+$ cd app
+$ mkdir src && cd src
 $ rails new .
 $ apt-get update
 $ apt-get -y install nodejs
 $ rails s -b 0.0.0.0
 ```
+http://localhost:3000
+
+
+
+## 2 コマンド作業をDockerfileに書いてく
+### 編集
+- Dockerfile
+```YAML:Dockerfile
+<追記>
+RUN gem install rails
+RUN apt-get update && \
+    apt-get install -y nodejs
+```
+
+```ターミナル1
+$ docker-compose up --build
+```
+```ターミナル2
+$ docker exec -it rails_app_1 /bin/bash
+$ cd app/src
+$ rails s -b 0.0.0.0
+```
+http://localhost:3000
+
