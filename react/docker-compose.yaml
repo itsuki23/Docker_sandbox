@@ -1,0 +1,15 @@
+version: "3.7"
+services:
+  front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./front:/front
+    working_dir: /front
+    # command: node
+    command: npm start
+    # これがないとすぐ落ちる
+    tty: true
+    ports:
+      - 3000:3000
