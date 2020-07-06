@@ -82,7 +82,7 @@ http://localhost:3000
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       # コンテナ削除後もデータが残るようにMac側のディレクトリをマウント
-      - "./mysql-data:/vara/lib/mysql"
+      - "./mysql-data:/var/lib/mysql"
     environment:
       MYSQL_ROOT_PASSWORD: root
   app:
@@ -207,9 +207,9 @@ RUN gem install -v 5.2.1 rails
 RUN apt-get update && \
     apt-get install -y nodejs mysql-client
 
-COPY ./src/Gemfile /app/src/Gemfile
-COPY ./src/Gemfile.lock /app/src/Gemfile.lock
-RUN cd /app/src && bundle install
+# COPY ./src/Gemfile /app/src/Gemfile
+# COPY ./src/Gemfile.lock /app/src/Gemfile.lock
+# RUN cd /app/src && bundle install
 ```
 
 - docker-compose.yml
@@ -233,6 +233,23 @@ services:
     depends_on:
       - db
     working_dir: "/app"
+```
+
+一度に作るなら...
+
+ターミナル
+```
+<ターミナル1>
+$ docker-compose up
+
+<ターミナル2>
+$ docker exec -it rails_app_1 /bin/bash
+
+$ rails new .
+<Gemfile, config/database.yml編集>
+$ bundle install
+$ rails db:create
+$ mysql -u root -proot -h db
 ```
 
 # その他
