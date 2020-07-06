@@ -63,6 +63,7 @@ $ docker-compose up --build
 
 <ターミナル２>
 $ docker exec -it rails_app_1 /bin/bash
+$ chown -R 実行ユーザー:実行グループ src
 $ cd app/src
 $ bundle install
 $ rails s -b 0.0.0.0
