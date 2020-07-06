@@ -4,6 +4,8 @@
 ![](markdown/images/2020-06-11-23-27-56.png)
 まずは０→１で上記表示できるまでをミニマムに。
 
+権限回りの調整必要。
+
 
 
 ## 1 最小構成
@@ -62,6 +64,7 @@ $ docker-compose up --build
 <ターミナル２>
 $ docker exec -it rails_app_1 /bin/bash
 $ cd app/src
+$ bundle install
 $ rails s -b 0.0.0.0
 ```
 http://localhost:3000
